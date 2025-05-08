@@ -1,5 +1,11 @@
 basePath: /
 definitions:
+  handlers.UpdateTaskStatusRequest:
+    properties:
+      completed:
+        example: true
+        type: boolean
+    type: object
   models.Task:
     properties:
       completed:
@@ -23,6 +29,28 @@ info:
   version: "1.0"
 paths:
   /tasks:
+    get:
+      consumes:
+      - application/json
+      description: Retorna todas as tarefas cadastradas
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Task'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Lista todas as tarefas
+      tags:
+      - tasks
     post:
       consumes:
       - application/json
@@ -54,6 +82,47 @@ paths:
               type: string
             type: object
       summary: Cria uma nova tarefa
+      tags:
+      - tasks
+  /tasks/attStatus/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Atualiza o status de uma tarefa existente
+      parameters:
+      - description: ID da Tarefa
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Status da Tarefa
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.UpdateTaskStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Atualiza o status de uma tarefa
       tags:
       - tasks
 swagger: "2.0"
