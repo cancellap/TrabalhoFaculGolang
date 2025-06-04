@@ -3,10 +3,11 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
-	"github.com/cancellap/TrabalhoFaculGolang/config"
-	_ "github.com/cancellap/TrabalhoFaculGolang/docs"
-	"github.com/cancellap/TrabalhoFaculGolang/routes"
+	"TrabalhoFaculGolang/internal/config"
+	_ "TrabalhoFaculGolang/docs"
+	"TrabalhoFaculGolang/routes"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	swaggerFiles "github.com/swaggo/files"
@@ -24,7 +25,7 @@ import (
 // @host localhost:8080
 // @BasePath /
 func main() {
-	err := godotenv.Load()
+	err := godotenv.Load("../../.env")
 	if err != nil {
 		log.Fatal("❌ Erro ao carregar o arquivo .env")
 	}
@@ -38,9 +39,15 @@ func main() {
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	routes.SetupRoutes(router)
+	// Passe o pool de conexão do banco para as rotas
+	routes.SetupRoutes(router, config.DB)
 
 	fmt.Println("Servidor rodando na porta 8080")
 	fmt.Println("Acesse a documentação Swagger em: http://localhost:8080/swagger/index.html")
-	router.Run(":8080")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	router.Run(":" + port)
 }

@@ -1,15 +1,24 @@
 package handlers
 
 import (
-	"net/http"
-
-	"github.com/cancellap/TrabalhoFaculGolang/config"
-	"github.com/cancellap/TrabalhoFaculGolang/models"
-	"github.com/gin-gonic/gin"
+	"fmt"
+   "net/http"
+    "context"
+    "github.com/gin-gonic/gin"
+	taskdomain "TrabalhoFaculGolang/internal/domain/task"
+    taskservice "TrabalhoFaculGolang/internal/service/task"
 )
 
 type ErrorResponse struct {
 	Error string `json:"error"`
+}
+
+type TaskHandler struct {
+	service *taskservice.Service
+}
+
+func NewTaskHandler(service *taskservice.Service) *TaskHandler {
+	return &TaskHandler{service: service}
 }
 
 // CreateTask godoc
@@ -23,18 +32,18 @@ type ErrorResponse struct {
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /tasks [post]
-func CreateTask(c *gin.Context) {
-	var task models.Task
-	if err := c.ShouldBindJSON(&task); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
+func (h *TaskHandler) Create(c *gin.Context) {
+	var t taskdomain.Task
+	if err := c.ShouldBindJSON(&t); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		fmt.Printf("Erro ao listar: %v\n", err)
 		return
 	}
-	err := models.CreateTask(config.DB, &task)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Erro ao criar task no banco"})
+	if err := h.service.CreateTask(c.Request.Context(), &t); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao criar task"})
 		return
 	}
-	c.JSON(http.StatusCreated, task)
+	c.JSON(http.StatusCreated, t)
 }
 
 // GetTasks godoc
@@ -46,15 +55,15 @@ func CreateTask(c *gin.Context) {
 // @Success 200 {array} models.Task
 // @Failure 500 {object} map[string]string
 // @Router /tasks [get]
-func GetTasks(c *gin.Context) {
-	tasks, err := models.GetTasks(config.DB)
+func (h *TaskHandler) List(c *gin.Context) {
+	tasks, err := h.service.ListTasks(context.Background())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Erro ao buscar tasks no banco"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao listar tasks"})
+		fmt.Printf("Erro ao listar: %v\n", err)
 		return
 	}
 	c.JSON(http.StatusOK, tasks)
 }
-
 // UpdateTaskStatus godoc
 // @Summary Atualiza o status de uma tarefa
 // @Description Atualiza o status de uma tarefa existente
@@ -67,24 +76,18 @@ func GetTasks(c *gin.Context) {
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /tasks/attStatus/{id} [put]
-func UpdateTaskStatus(c *gin.Context) {
-	var payload UpdateTaskStatusRequest
-
+func (h *TaskHandler) UpdateStatus(c *gin.Context) {
+	var payload struct {
+		Completed bool `json:"completed"`
+	}
 	if err := c.ShouldBindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
 	id := c.Param("id")
-	err := models.UpdateTaskStatus(config.DB, id, payload.Completed)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao atualizar status da task no banco"})
+	if err := h.service.UpdateTaskStatus(c.Request.Context(), id, payload.Completed); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao atualizar status"})
 		return
 	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "Status atualizado com sucesso"})
-}
-
-type UpdateTaskStatusRequest struct {
-	Completed bool `json:"completed" example:"true"`
+	c.JSON(http.StatusOK, gin.H{"message": "Status atualizado"})
 }

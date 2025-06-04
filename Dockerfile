@@ -8,7 +8,6 @@ RUN go mod download
 COPY . .   
 RUN go build -o api main.go
 
-# Etapa final
 FROM alpine:latest
 
 WORKDIR /root/
