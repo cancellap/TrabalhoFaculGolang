@@ -19,13 +19,12 @@ import (
 // @description Esta API gerencia uma lista de tarefas.
 // @termsOfService http://swagger.io/terms/
 // @contact.name API Support
-// @contact.email seu-email@example.com
 // @license.name MIT
 // @license.url https://opensource.org/licenses/MIT
 // @host localhost:8080
 // @BasePath /
 func main() {
-	err := godotenv.Load("../../.env")
+	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatal("❌ Erro ao carregar o arquivo .env")
 	}
