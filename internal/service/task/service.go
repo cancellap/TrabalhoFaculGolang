@@ -2,6 +2,8 @@ package task
 
 import (
 	"context"
+	"github.com/google/uuid"
+
 	taskdomain "TrabalhoFaculGolang/internal/domain/task"
 )
 
@@ -19,8 +21,18 @@ func NewService(repo Repository) *Service {
 	return &Service{repo: repo}
 }
 
-func (s *Service) CreateTask(ctx context.Context, t *taskdomain.Task) error {
-	return s.repo.Create(ctx, t)
+func (s *Service) CreateTask(ctx context.Context, t *taskdomain.Task) (*taskdomain.Task, error) {
+
+	task := &taskdomain.Task{
+		ID:        uuid.NewString(),
+		Title:     t.Title,
+		Completed: t.Completed,
+	}
+	err := s.repo.Create(ctx, task)
+	if err != nil {
+		return nil, err
+	}
+	return task, nil
 }
 
 func (s *Service) ListTasks(ctx context.Context) ([]taskdomain.Task, error) {

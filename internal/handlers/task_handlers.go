@@ -3,7 +3,6 @@ package handlers
 import (
 	"fmt"
    "net/http"
-    "context"
     "github.com/gin-gonic/gin"
 	taskdomain "TrabalhoFaculGolang/internal/domain/task"
     taskservice "TrabalhoFaculGolang/internal/service/task"
@@ -33,17 +32,18 @@ func NewTaskHandler(service *taskservice.Service) *TaskHandler {
 // @Failure 500 {object} map[string]string
 // @Router /tasks [post]
 func (h *TaskHandler) Create(c *gin.Context) {
-	var t taskdomain.Task
-	if err := c.ShouldBindJSON(&t); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		fmt.Printf("Erro ao listar: %v\n", err)
-		return
-	}
-	if err := h.service.CreateTask(c.Request.Context(), &t); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao criar task"})
-		return
-	}
-	c.JSON(http.StatusCreated, t)
+    var t taskdomain.Task
+    if err := c.ShouldBindJSON(&t); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        fmt.Printf("Erro ao listar: %v\n", err)
+        return
+    }
+    createdTask, err := h.service.CreateTask(c.Request.Context(), &t)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao criar task"})
+        return
+    }
+    c.JSON(http.StatusCreated, createdTask)
 }
 
 // GetTasks godoc
@@ -56,7 +56,7 @@ func (h *TaskHandler) Create(c *gin.Context) {
 // @Failure 500 {object} map[string]string
 // @Router /tasks [get]
 func (h *TaskHandler) List(c *gin.Context) {
-	tasks, err := h.service.ListTasks(context.Background())
+	tasks, err := h.service.ListTasks(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao listar tasks"})
 		fmt.Printf("Erro ao listar: %v\n", err)

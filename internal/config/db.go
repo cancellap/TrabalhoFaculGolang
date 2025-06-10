@@ -1,8 +1,9 @@
-package config
+package db
 
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -11,25 +12,51 @@ import (
 
 var DB *pgxpool.Pool
 
-func ConnectDB() error {
-	databaseUrl, ok := os.LookupEnv("DATABASE_URL")
-	if !ok || databaseUrl == "" {
-		return fmt.Errorf("DATABASE_URL não está definida")
+func InitDB() {
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	host := os.Getenv("DB_HOST")
+	port := os.Getenv("DB_PORT")
+	dbname := os.Getenv("DB_NAME")
+
+	if user == "" || password == "" || host == "" || port == "" || dbname == "" {
+		log.Fatal("Variáveis de ambiente de conexão não estão totalmente definidas")
 	}
+
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+		user, password, host, port, dbname,
+	)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	pool, err := pgxpool.New(ctx, databaseUrl)
+	var err error
+	DB, err = pgxpool.New(ctx, dsn)
 	if err != nil {
-		return fmt.Errorf("erro ao criar pool: %w", err)
+		log.Fatalf("Erro ao conectar ao banco de dados: %v", err)
 	}
 
-	if err = pool.Ping(ctx); err != nil {
-		return fmt.Errorf("falha ao conectar: %w", err)
+	err = DB.Ping(ctx)
+	if err != nil {
+		log.Fatalf("Erro ao testar conexão com banco: %v", err)
 	}
+ 	createTableSQL := `
+	CREATE TABLE IF NOT EXISTS tasks (
+		id VARCHAR(100) PRIMARY KEY,
+		title VARCHAR(100),
+		completed BOOLEAN
+	);
+    `
+    _, err = DB.Exec(ctx, createTableSQL)
+    if err != nil {
+        log.Fatalf("Erro ao criar tabela: %v", err)
+    }
 
-	DB = pool
-	fmt.Println("✅ Banco conectado!")
-	return nil
+    fmt.Println("✅ Conectado ao banco de dados com sucesso e tabela criada (se necessário)")
+}
+
+func CloseDB() {
+	if DB != nil {
+		DB.Close()
+	}
 }

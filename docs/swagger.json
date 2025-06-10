@@ -6,7 +6,7 @@
         "termsOfService": "http://swagger.io/terms/",
         "contact": {
             "name": "API Support",
-            "email": "seu-email@example.com"
+            "email": ""
         },
         "license": {
             "name": "MIT",
@@ -182,7 +182,7 @@
                     "type": "boolean"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "title": {
                     "type": "string"

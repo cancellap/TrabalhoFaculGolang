@@ -23,8 +23,8 @@ func NewRepository(db *pgxpool.Pool) Repository {
 }
 
 func (r *repository) Create(ctx context.Context, task *taskdomain.Task) error {
-	query := "INSERT INTO tasks (title, completed) VALUES ($1, $2) RETURNING id"
-	err := r.db.QueryRow(ctx, query, task.Title, task.Completed).Scan(&task.ID)
+	query := "INSERT INTO tasks (id, title, completed) VALUES ($1, $2, $3)"
+	_, err := r.db.Exec(ctx, query, task.ID, task.Title, task.Completed)
 	if err != nil {
 		return fmt.Errorf("erro ao inserir task: %w", err)
 	}
