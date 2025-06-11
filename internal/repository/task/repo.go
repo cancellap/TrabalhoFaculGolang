@@ -12,6 +12,7 @@ type Repository interface {
 	Create(ctx context.Context, task *taskdomain.Task) error
 	List(ctx context.Context) ([]taskdomain.Task, error)
 	UpdateStatus(ctx context.Context, id string, completed bool) error
+	Delete(ctx context.Context, id string) error
 }
 
 type repository struct {
@@ -53,6 +54,14 @@ func (r *repository) UpdateStatus(ctx context.Context, id string, completed bool
 	_, err := r.db.Exec(ctx, "UPDATE tasks SET completed = $1 WHERE id = $2", completed, id)
 	if err != nil {
 		return fmt.Errorf("erro ao atualizar status: %w", err)
+	}
+	return nil
+}
+
+func (r *repository)Delete(ctx context.Context, id string) error {
+	_, err := r.db.Exec(ctx, "DELETE FROM tasks WHERE id = $1", id)
+	if err != nil {
+		return fmt.Errorf("erro ao deletar task: %w", err)
 	}
 	return nil
 }

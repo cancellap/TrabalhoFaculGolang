@@ -18,5 +18,6 @@ func SetupRoutes(router *gin.Engine, db *pgxpool.Pool) {
         tasks.POST("", handler.Create)
         tasks.GET("", handler.List)
         tasks.PUT("/attStatus/:id", handler.UpdateStatus)
+        tasks.DELETE("/:id", handler.Delete)
     }
 }

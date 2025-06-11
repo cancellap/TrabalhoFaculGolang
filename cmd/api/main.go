@@ -9,12 +9,19 @@ import (
 	_ "TrabalhoFaculGolang/docs"
 	"TrabalhoFaculGolang/routes"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+// @title API TodoList GO
+// @version 1.0
+// @description API feita em Golang para gerenciamento de tarefas
+// @host todolistgo-57814d96dd24.herokuapp.com
+// @schemes https
+// @BasePath /
 func main() {
 
 	err := godotenv.Load(".env")
@@ -28,6 +35,13 @@ func main() {
 	}
 
 	router := gin.Default()
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	routes.SetupRoutes(router, config.DB)

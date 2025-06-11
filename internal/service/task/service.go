@@ -11,6 +11,7 @@ type Repository interface {
 	Create(ctx context.Context, t *taskdomain.Task) error
 	List(ctx context.Context) ([]taskdomain.Task, error)
 	UpdateStatus(ctx context.Context, id string, completed bool) error
+	Delete(ctx context.Context, id string) error
 }
 
 type Service struct {
@@ -41,4 +42,8 @@ func (s *Service) ListTasks(ctx context.Context) ([]taskdomain.Task, error) {
 
 func (s *Service) UpdateTaskStatus(ctx context.Context, id string, completed bool) error {
 	return s.repo.UpdateStatus(ctx, id, completed)
+}
+
+func (s *Service) DeleteById(ctx context.Context, id string) error {
+	return s.repo.Delete(ctx, id)
 }

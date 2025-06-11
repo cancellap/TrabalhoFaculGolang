@@ -12,6 +12,10 @@ type ErrorResponse struct {
 	Error string `json:"error"`
 }
 
+type UpdateTaskStatusRequest struct {
+    Status string `json:"status"`
+}
+
 type TaskHandler struct {
 	service *taskservice.Service
 }
@@ -26,8 +30,8 @@ func NewTaskHandler(service *taskservice.Service) *TaskHandler {
 // @Tags tasks
 // @Accept json
 // @Produce json
-// @Param task body models.Task true "Dados da Tarefa"
-// @Success 201 {object} models.Task
+// @Param task body taskdomain.Task true "Dados da Tarefa"
+// @Success 201 {object} taskdomain.Task
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /tasks [post]
@@ -52,7 +56,7 @@ func (h *TaskHandler) Create(c *gin.Context) {
 // @Tags tasks
 // @Accept json
 // @Produce json
-// @Success 200 {array} models.Task
+// @Success 200 {array} taskdomain.Task
 // @Failure 500 {object} map[string]string
 // @Router /tasks [get]
 func (h *TaskHandler) List(c *gin.Context) {
@@ -90,4 +94,24 @@ func (h *TaskHandler) UpdateStatus(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Status atualizado"})
+}
+
+// DeleteTask godoc
+// @Summary Deleta uma tarefa
+// @Description Deleta uma tarefa existente
+// @Tags tasks
+// @Accept json
+// @Produce json
+// @Param id path string true "ID da Tarefa"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /tasks/{id} [delete]
+func (h *TaskHandler) Delete(c *gin.Context) {
+    id := c.Param("id")
+    if err := h.service.DeleteById(c.Request.Context(), id); err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao deletar task"})
+        return
+    }
+    c.JSON(http.StatusOK, gin.H{"message": "Task deletada com sucesso"})
 }

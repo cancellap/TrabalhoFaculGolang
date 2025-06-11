@@ -2,30 +2,23 @@ basePath: /
 definitions:
   handlers.UpdateTaskStatusRequest:
     properties:
-      completed:
-        example: true
-        type: boolean
+      status:
+        type: string
     type: object
-  models.Task:
+  taskdomain.Task:
     properties:
       completed:
         type: boolean
       id:
-        type: integer
+        type: string
       title:
         type: string
     type: object
-host: localhost:8080
+host: todolistgo-57814d96dd24.herokuapp.com
 info:
-  contact:
-    email: seu-email@example.com
-    name: API Support
-  description: Esta API gerencia uma lista de tarefas.
-  license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
-  termsOfService: http://swagger.io/terms/
-  title: Todo List API
+  contact: {}
+  description: API feita em Golang para gerenciamento de tarefas
+  title: API TodoList GO
   version: "1.0"
 paths:
   /tasks:
@@ -40,7 +33,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/models.Task'
+              $ref: '#/definitions/taskdomain.Task'
             type: array
         "500":
           description: Internal Server Error
@@ -61,14 +54,14 @@ paths:
         name: task
         required: true
         schema:
-          $ref: '#/definitions/models.Task'
+          $ref: '#/definitions/taskdomain.Task'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/models.Task'
+            $ref: '#/definitions/taskdomain.Task'
         "400":
           description: Bad Request
           schema:
@@ -82,6 +75,41 @@ paths:
               type: string
             type: object
       summary: Cria uma nova tarefa
+      tags:
+      - tasks
+  /tasks/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deleta uma tarefa existente
+      parameters:
+      - description: ID da Tarefa
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Deleta uma tarefa
       tags:
       - tasks
   /tasks/attStatus/{id}:
@@ -125,4 +153,6 @@ paths:
       summary: Atualiza o status de uma tarefa
       tags:
       - tasks
+schemes:
+- https
 swagger: "2.0"
